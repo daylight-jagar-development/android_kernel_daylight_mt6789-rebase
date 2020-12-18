@@ -2406,6 +2406,99 @@ SYSCALL_DEFINE6(epoll_pwait, int, epfd, struct epoll_event __user *, events,
 	return error;
 }
 
+/*
+ * Backport of upstream commit b0a0c2615f6f ("epoll: wire up syscall
+ * epoll_pwait2"), needed because Android 16's BLASTBufferQueue calls
+ * epoll_pwait2() unconditionally (frameworks/native/libs/gui/
+ * BLASTBufferQueue.cpp). On a stock 5.10 kernel the syscall is absent, so the
+ * call returns -ENOSYS, readBlocking() reports UNKNOWN_ERROR and the caller
+ * immediately retries - a busy loop that spammed ~12k errors/minute and kept a
+ * SurfaceFlinger consumer thread spinning.
+ *
+ * ep_timeout_to_ms() converts the nanosecond-resolution timespec to the
+ * millisecond timeout that this kernel's ep_poll() takes. Rounding up keeps the
+ * "wait at least this long" contract; sub-millisecond waits become 1 ms rather
+ * than 0 (which would mean "return immediately"). Validity is checked by the
+ * caller so that the "block forever" sentinel (-1) cannot be confused with an
+ * error code.
+ */
+static int ep_timeout_to_ms(struct timespec64 *to)
+{
+	if (!to)
+		return -1;			/* block indefinitely */
+
+	if (!(to->tv_sec | to->tv_nsec))
+		return 0;			/* non-blocking poll */
+
+	if (to->tv_sec > (INT_MAX - 999) / MSEC_PER_SEC)
+		return -1;			/* effectively infinite */
+
+	return (int)(to->tv_sec * MSEC_PER_SEC +
+		     DIV_ROUND_UP(to->tv_nsec, NSEC_PER_MSEC));
+}
+
+static int do_epoll_pwait2(int epfd, struct epoll_event __user *events,
+			   int maxevents, struct timespec64 *to,
+			   int error)
+{
+	if (error)
+		return error;
+
+	/* Validate here: ep_timeout_to_ms() reserves -1 for "wait forever". */
+	if (to && !timespec64_valid(to))
+		return -EINVAL;
+
+	error = do_epoll_wait(epfd, events, maxevents, ep_timeout_to_ms(to));
+	restore_saved_sigmask_unless(error == -EINTR);
+
+	return error;
+}
+
+SYSCALL_DEFINE6(epoll_pwait2, int, epfd, struct epoll_event __user *, events,
+		int, maxevents, const struct __kernel_timespec __user *, timeout,
+		const sigset_t __user *, sigmask, size_t, sigsetsize)
+{
+	struct timespec64 ts, *to = NULL;
+	int error;
+
+	if (timeout) {
+		if (get_timespec64(&ts, timeout))
+			return -EFAULT;
+		to = &ts;
+	}
+
+	/*
+	 * If the caller wants a certain signal mask to be set during the wait,
+	 * we apply it here.
+	 */
+	error = set_user_sigmask(sigmask, sigsetsize);
+
+	return do_epoll_pwait2(epfd, events, maxevents, to, error);
+}
+
+#ifdef CONFIG_COMPAT
+COMPAT_SYSCALL_DEFINE6(epoll_pwait2, int, epfd,
+		       struct epoll_event __user *, events,
+		       int, maxevents,
+		       const struct __kernel_timespec __user *, timeout,
+		       const compat_sigset_t __user *, sigmask,
+		       compat_size_t, sigsetsize)
+{
+	struct timespec64 ts, *to = NULL;
+	int error;
+
+	if (timeout) {
+		if (get_timespec64(&ts, timeout))
+			return -EFAULT;
+		to = &ts;
+	}
+
+	error = set_compat_user_sigmask(sigmask, sigsetsize);
+
+	return do_epoll_pwait2(epfd, events, maxevents, to, error);
+}
+#endif
+
 #ifdef CONFIG_COMPAT
 COMPAT_SYSCALL_DEFINE6(epoll_pwait, int, epfd,
 			struct epoll_event __user *, events,
