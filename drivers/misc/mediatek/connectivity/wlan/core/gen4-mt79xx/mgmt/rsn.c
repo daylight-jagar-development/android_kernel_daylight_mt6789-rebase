@@ -1794,27 +1794,31 @@ void rsnGenerateRSNIE(IN struct ADAPTER *prAdapter,
 		}
 
 		/* Capabilities */
-		WLAN_SET_FIELD_16(cp, GET_BSS_INFO_BY_INDEX(prAdapter,
-				  ucBssIndex)->u2RsnSelectedCapInfo);
+		WLAN_SET_FIELD_16(cp, aisGetConnSettings(prAdapter,
+				  ucBssIndex)->rRsnInfo.u2RsnCap);
 		DBGLOG(RSN, TRACE,
-		       "Gen RSN IE = %x\n", GET_BSS_INFO_BY_INDEX(prAdapter,
-				       ucBssIndex)->u2RsnSelectedCapInfo);
- #if CFG_SUPPORT_802_11W
+		       "Gen RSN IE = %x\n", aisGetConnSettings(prAdapter,
+				       ucBssIndex)->rRsnInfo.u2RsnCap);
+#if CFG_SUPPORT_802_11W
 		if (GET_BSS_INFO_BY_INDEX(prAdapter,
 			ucBssIndex)->eNetworkType == NETWORK_TYPE_AIS) {
+			uint16_t u2Cap = aisGetConnSettings(prAdapter,
+					 ucBssIndex)->rRsnInfo.u2RsnCap;
+
 			if (kalGetRsnIeMfpCap(prAdapter->prGlueInfo,
 				ucBssIndex) ==
-			    RSN_AUTH_MFP_REQUIRED) {
-				WLAN_SET_FIELD_16(cp,
+				RSN_AUTH_MFP_REQUIRED) {
+				WLAN_SET_FIELD_16(cp, u2Cap |
 					ELEM_WPA_CAP_MFPC | ELEM_WPA_CAP_MFPR);
-					/* Capabilities */
+				/* Capabilities */
 				DBGLOG(RSN, TRACE,
 					"RSN_AUTH_MFP - MFPC & MFPR\n");
 			} else if (kalGetRsnIeMfpCap(prAdapter->prGlueInfo,
 				ucBssIndex) ==
-				   RSN_AUTH_MFP_OPTIONAL) {
-				WLAN_SET_FIELD_16(cp, ELEM_WPA_CAP_MFPC);
-					/* Capabilities */
+				RSN_AUTH_MFP_OPTIONAL) {
+				WLAN_SET_FIELD_16(cp,
+					u2Cap | ELEM_WPA_CAP_MFPC);
+				/* Capabilities */
 				DBGLOG(RSN, TRACE, "RSN_AUTH_MFP - MFPC\n");
 			} else {
 				DBGLOG(RSN, TRACE,

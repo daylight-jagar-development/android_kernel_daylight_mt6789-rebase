@@ -1940,6 +1940,10 @@ int mtk_cfg80211_connect(struct wiphy *wiphy,
 			kalMemZero(&rRsnInfo, sizeof(struct RSN_INFO));
 			if (rsnParseRsnIE(prGlueInfo->prAdapter,
 			    (struct RSN_INFO_ELEM *)prDesiredIE, &rRsnInfo)) {
+				prConnSettings->rRsnInfo.u2RsnCap =
+					rRsnInfo.u2RsnCap;
+				prConnSettings->rRsnInfo.fgRsnCapPresent =
+					rRsnInfo.fgRsnCapPresent;
 #if CFG_SUPPORT_802_11W
 				/* Fill RSNE MFP Cap & group mgmt cipher */
 				if (rRsnInfo.u2RsnCap & ELEM_WPA_CAP_MFPC) {
@@ -4843,6 +4847,10 @@ int mtk_cfg80211_assoc(struct wiphy *wiphy,
 			if (rsnParseRsnIE(prGlueInfo->prAdapter,
 				(struct RSN_INFO_ELEM *)prDesiredIE,
 				&rRsnInfo)) {
+				prConnSettings->rRsnInfo.u2RsnCap =
+					rRsnInfo.u2RsnCap;
+				prConnSettings->rRsnInfo.fgRsnCapPresent =
+					rRsnInfo.fgRsnCapPresent;
 #if CFG_SUPPORT_802_11W
 				/* Fill RSNE MFP Cap */
 				if (rRsnInfo.u2RsnCap & ELEM_WPA_CAP_MFPC) {
