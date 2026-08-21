@@ -2539,6 +2539,7 @@ s32 cmdq_mbox_enable(void *chan)
 			atomic_read(&cmdq->usage));
 		return -EFAULT;
 	}
+
 	pm_runtime_get_sync(cmdq->mbox.dev);
 	mutex_lock(&cmdq->mbox_mutex);
 	mbox_usage = atomic_inc_return(&cmdq->mbox_usage);
@@ -2555,6 +2556,10 @@ s32 cmdq_mbox_enable(void *chan)
 	for (i = 0; i < ARRAY_SIZE(cmdq->thread); i++)
 		if (cmdq->thread[i].chan == chan)
 			break;
+	if (i >= ARRAY_SIZE(cmdq->thread)) {
+		cmdq_err("Input chan:%p is wrong", chan);
+		return -EINVAL;
+	}
 
 	atomic_inc(&cmdq->thread[i].usage);
 	return atomic_read(&cmdq->thread[i].usage);
@@ -2579,12 +2584,21 @@ s32 cmdq_mbox_disable(void *chan)
 	for (i = 0; i < ARRAY_SIZE(cmdq->thread); i++)
 		if (cmdq->thread[i].chan == chan)
 			break;
-
-	mbox_usage = atomic_dec_return(&cmdq->thread[i].usage);
-	if (mbox_usage < 0)
-		// cmdq_util_thread_module_dispatch(cmdq->base_pa, i)
-		cmdq_util_aee("CMDQ", "hwid:%hu idx:%d usage:d",
-			cmdq->hwid, i, mbox_usage);
+	if (i >= ARRAY_SIZE(cmdq->thread)) {
+		/*
+		 * No thread owns this channel. Still unwind the clock and
+		 * runtime-PM references taken by cmdq_mbox_enable() so the
+		 * refcounts stay balanced, but skip the thread[] accesses.
+		 */
+		cmdq_err("Input chan:%p is wrong", chan);
+		i = -1;
+	} else {
+		mbox_usage = atomic_dec_return(&cmdq->thread[i].usage);
+		if (mbox_usage < 0)
+			// cmdq_util_thread_module_dispatch(cmdq->base_pa, i)
+			cmdq_util_aee("CMDQ", "hwid:%hu idx:%d usage:d",
+				cmdq->hwid, i, mbox_usage);
+	}
 
 	cmdq_clk_disable(cmdq);
 
@@ -2609,7 +2623,7 @@ s32 cmdq_mbox_disable(void *chan)
 		dump_stack();
 	}
 	pm_runtime_put_sync(cmdq->mbox.dev);
-	return atomic_read(&cmdq->thread[i].usage);
+	return i >= 0 ? atomic_read(&cmdq->thread[i].usage) : -EINVAL;
 }
 EXPORT_SYMBOL(cmdq_mbox_disable);
 
