@@ -1708,5 +1708,5 @@ ROOT_NODE {
 #endif /* THERMAL_ZONE_SOC_MAX_COOLING_ENABLE */
 
 #include "mediatek/rt9471_slave_charger.dtsi" //for dual chargers - slave cahrger RT9471
-#include <jagar/cust.dtsi>
+#include "jagar/cust.dtsi"
 /*End of this file, DO NOT ADD ANYTHING HERE*/
