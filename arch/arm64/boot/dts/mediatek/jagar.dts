@@ -47,7 +47,7 @@ ROOT_NODE {
 };
 
 &android {
-	hardware = "mt8781";
+	hardware = "mt6789";
 };
 
 &pio {
