@@ -65,7 +65,8 @@ endif
 
 #################### Configurations ####################
 # For chip interface, driver supports "usb", "sdio", "uart_tty", "uart_serdev" and "btif"
-MTK_CHIP_IF := uart_tty
+MTK_CHIP_IF := sdio
+
 
 ifeq ($(MTK_CHIP_IF), sdio)
     MOD_NAME = btmtk_sdio_unify
@@ -115,16 +116,26 @@ ifeq ($(BT_CONFIG_TRACING),y)
 endif
 
 $(info linux_v2/Kbuild [BT_Drv] MTK_PROJ_TYPE = $(MTK_PROJ_TYPE) src = $(src) KO_CODE_PATH = $(KO_CODE_PATH))
-#ifeq ($(MTK_PROJ_TYPE), sp)
-ifeq ($(CONFIG_SUPPORT_DEVICE_NODE), y)
+ifeq ($(MTK_PROJ_TYPE), sp)
     CFILES += proj/btmtk_proj_sp.c proj/btmtk_proj_sp_debug.c
     ccflags-y += -DANDROID_OS
-    ccflags-y += -I$(srctree)/drivers/misc/mediatek/connectivity/power_throttling
-#else ifeq ($(MTK_PROJ_TYPE), ce)
 else
     CFILES += proj/btmtk_proj_ce.c
     ccflags-y += -DLINUX_OS
 endif
+
+# Add the connv3/conninfra header dirs: btmtk_proj_sp.h is included whenever
+# USE_DEVICE_NODE == 1, even with the ce project.
+CONNINFRA_BASE := $(srctree)/drivers/misc/mediatek/connectivity/conninfra
+CONNV3_BASE := $(CONNINFRA_BASE)/conn_drv/connv3
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/connectivity/power_throttling
+ccflags-y += -I$(CONNINFRA_BASE)/include
+ccflags-y += -I$(CONNV3_BASE)/debug_utility
+ccflags-y += -I$(CONNV3_BASE)/debug_utility/include
+ccflags-y += -I$(CONNV3_BASE)/debug_utility/connsyslog
+ccflags-y += -I$(CONNV3_BASE)/debug_utility/coredump
+ccflags-y += -I$(CONNV3_BASE)/core/include
+ccflags-y += -I$(CONNV3_BASE)/platform/include
 
 CFILES += btmtk_main.c btmtk_fw_log.c
 

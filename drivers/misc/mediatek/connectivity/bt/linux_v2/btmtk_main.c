@@ -5063,10 +5063,10 @@ int btmtk_main_cif_initialize(struct btmtk_dev *bdev, int hci_bus)
 #if (USE_DEVICE_NODE == 0)
 	btmtk_load_bt_cfg(bdev->bt_cfg_file_name, bdev->intf_dev, bdev);
 
-	err = (void)snprintf(bdev->country_file_name, MAX_BIN_FILE_NAME_LEN,
+	err = snprintf(bdev->country_file_name, MAX_BIN_FILE_NAME_LEN,
 			DEFAULT_COUNTRY_TABLE_NAME);
 	if (err < 0 || err > MAX_BIN_FILE_NAME_LEN)
-		BTMTK_ERR("%s: error snprintf value = %d", err);
+		BTMTK_ERR("%s: error snprintf value = %d", __func__, err);
 #endif
 
 #ifdef BTMTK_DEBUG_SOP

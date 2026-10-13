@@ -40,14 +40,15 @@ endif
 
 #################### Configurations ####################
 # For chip interface, driver supports "usb", "sdio", "uart" and "btif"
-MTK_CHIP_IF := usb
+MTK_CHIP_IF := sdio
 
 ifeq ($(MTK_CHIP_IF), sdio)
     MOD_NAME = btmtk_sdio_unify
     CFILES := sdio/btmtksdio.c btmtk_woble.c btmtk_buffer_mode.c btmtk_chip_reset.c
     ccflags-y += -DCHIP_IF_SDIO
     ccflags-y += -DSDIO_DEBUG=0
-    ccflags-y += -I$(src)/include/sdio
+    ccflags-y += -I$(srctree)/drivers/misc/mediatek/connectivity/bt/mt66xx/include/sdio
+    ccflags-y += -I$(srctree)/drivers/misc/mediatek/connectivity/bt/mt66xx/include
 else ifeq ($(MTK_CHIP_IF), usb)
     MOD_NAME = btmtk_usb_unify
     CFILES := usb/btmtkusb.c btmtk_woble.c btmtk_chip_reset.c

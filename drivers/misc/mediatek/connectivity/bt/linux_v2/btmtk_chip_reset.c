@@ -67,7 +67,7 @@ void btmtk_reset_waker(struct work_struct *work)
 	int cur = 0;
 	unsigned char fstate = BTMTK_FOPS_STATE_INIT;
 #if (USE_DEVICE_NODE == 0)
-	int cif_event = 0
+	int cif_event = 0;
 	struct btmtk_cif_state *cif_state = NULL;
 #endif
 

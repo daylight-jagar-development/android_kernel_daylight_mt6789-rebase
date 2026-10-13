@@ -1242,7 +1242,7 @@ failed:
 
 static int btmtk_sdio_enable_host_int(struct btmtk_sdio_dev *cif_dev)
 {
-	int ret;
+	int ret = 0;
 	u32 read_data = 0;
 
 	if (!cif_dev || !cif_dev->func)
@@ -2042,7 +2042,7 @@ static const struct dev_pm_ops btmtk_sdio_pm_ops = {
 #endif
 
 static struct sdio_driver btmtk_sdio_driver = {
-	.name = "btsdio",
+	.name = "mtk-btsdio",
 	.id_table = btmtk_sdio_tabls,
 	.probe = btmtk_cif_probe,
 	.remove = btmtk_cif_disconnect,
@@ -2129,5 +2129,4 @@ int btmtk_cif_deregister(void)
 	BTMTK_INFO("%s: Done", __func__);
 	return 0;
 }
-
 

@@ -33,6 +33,7 @@
 #include <linux/mmc/sdio_ids.h>
 #include <linux/errno.h>
 #include "precomp.h"
+#include "include/reset.h"
 
 /*******************************************************************************
 *                              C O N S T A N T S

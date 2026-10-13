@@ -69,6 +69,18 @@
 	#define UNUSED(x) (void)(x)
 #endif
 
+#ifndef FW_LOG_DEFAULT_ON
+#define FW_LOG_DEFAULT_ON 0
+#endif
+
+#ifndef BUILD_QA_DBG
+#define BUILD_QA_DBG 0
+#endif
+
+#ifndef USE_DEVICE_NODE
+#define USE_DEVICE_NODE 0
+#endif
+
 #ifndef ALIGN_4
 #define ALIGN_4(_value)             (((_value) + 3) & ~3u)
 #endif /* ALIGN_4 */

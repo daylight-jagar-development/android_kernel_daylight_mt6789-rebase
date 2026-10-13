@@ -13,6 +13,7 @@ $(info Kbuild hif : $(CONFIG_MTK_COMBO_WIFI_HIF))
 endif
 endif
 endif
+src:=$(srctree)/$(shell echo ${src})
 
 # ---------------------------------------------------
 # OS option
@@ -791,7 +792,7 @@ ifeq ($(MODULE_NAME),)
 endif
 
 ccflags-y += -DDBG=0
-ccflags-y += -I$(src)/os -I$(src)/os/$(os)/include
+subdir-ccflags-y += -I$(src)/os -I$(src)/os/$(os)/include
 ccflags-y += -I$(src)/include -I$(src)/include/nic -I$(src)/include/mgmt -I$(src)/include/chips
 ifeq ($(CONFIG_MTK_WIFI_NAN), y)
 ccflags-y += -I$(src)/include/nan -I$(src)/include/nan/wpa_supp
@@ -1266,3 +1267,10 @@ endif
 # $(MODULE_NAME_RESET)-objs += $(RESET_OBJS)
 # obj-m += $(MODULE_NAME_RESET).o
 # endif
+    ifeq ($(MODULE_NAME_RESET),)
+        MODULE_NAME_RESET = wlan_sdio_reset
+    endif
+    ccflags-y += -I$(src)/reset/include
+    RESET_OBJS += reset/reset.o
+    $(MODULE_NAME_RESET)-objs += $(RESET_OBJS)
+    obj-m += $(MODULE_NAME_RESET).o

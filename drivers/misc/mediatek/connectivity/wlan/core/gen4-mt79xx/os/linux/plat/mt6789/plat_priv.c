@@ -24,6 +24,9 @@ enum ENUM_CPU_BOOST_STATUS {
 	ENUM_CPU_BOOST_STATUS_NUM
 };
 
+#define WIPHY_PRIV(_wiphy, _priv) \
+        (_priv = *((struct GLUE_INFO **) wiphy_priv(_wiphy)))
+
 /* mimic store_rps_map as net-sysfs.c does */
 int wlan_set_rps_map(struct netdev_rx_queue *queue, unsigned long rps_value)
 {

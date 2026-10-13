@@ -2,7 +2,6 @@
 # Bluetooth character device driver
 
 ###############################################################################
-
 # ---------------------------------------------------
 # Compile Options
 # ---------------------------------------------------
@@ -101,8 +100,9 @@ ccflags-y += -I$(BTIF_SRC)/common/inc
 
 ccflags-y += -I$(src)/core/include
 ccflags-y += -I$(src)/connsys/connac_2_0
-ccflags-y += -I$(src)/../include
-ccflags-y += -I$(src)/../include/btif
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/connectivity/bt/mt66xx/btif/include
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/connectivity/bt/mt66xx/include/btif
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/connectivity/bt/mt66xx/include
 
 # ---------------------------------------------------
 # Objects List

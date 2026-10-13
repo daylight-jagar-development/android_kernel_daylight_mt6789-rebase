@@ -2529,7 +2529,7 @@ static const struct dev_pm_ops btmtk_sdio_pm_ops = {
 #endif
 
 static struct sdio_driver btmtk_sdio_driver = {
-	.name = "btsdio",
+	.name = "mtk-btsdio",
 	.id_table = btmtk_sdio_tabls,
 	.probe = btmtk_cif_probe,
 	.remove = btmtk_cif_disconnect,
